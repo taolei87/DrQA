@@ -15,6 +15,7 @@ from torch.autograd import Variable
 # Modules
 # ------------------------------------------------------------------------------
 
+from . import cuda_functional3 as MF
 
 class StackedBRNN(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers,
@@ -29,10 +30,14 @@ class StackedBRNN(nn.Module):
         self.rnns = nn.ModuleList()
         for i in range(num_layers):
             input_size = input_size if i == 0 else 2 * hidden_size
-            self.rnns.append(rnn_type(input_size, hidden_size,
-                                      num_layers=1,
+            #self.rnns.append(rnn_type(input_size, hidden_size,
+            #                          num_layers=1,
+            #                          bidirectional=True))
+            self.rnns.append(MF.FastKNNCell(input_size, hidden_size,
+                                      dropout=0,
+                                      rnn_dropout=0,
+                                      use_tanh=1,
                                       bidirectional=True))
-
     def forward(self, x, x_mask):
         """Can choose to either handle or ignore variable length sequences.
         Always handle padding in eval.
@@ -41,8 +46,8 @@ class StackedBRNN(nn.Module):
         if x_mask.data.sum() == 0:
             return self._forward_unpadded(x, x_mask)
         # Pad if we care or if its during eval.
-        if self.padding or not self.training:
-            return self._forward_padded(x, x_mask)
+        #if self.padding or not self.training:
+        #    return self._forward_padded(x, x_mask)
         # We don't care.
         return self._forward_unpadded(x, x_mask)
 
@@ -79,7 +84,7 @@ class StackedBRNN(nn.Module):
             output = F.dropout(output,
                                p=self.dropout_rate,
                                training=self.training)
-        return output
+        return output.contiguous()
 
     def _forward_padded(self, x, x_mask):
         """Slower (significantly), but more precise,

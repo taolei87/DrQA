@@ -163,7 +163,7 @@ def main():
                     str((datetime.now() - start) / (i + 1) * (len(batches) - i - 1)).split('.')[0]))
         # eval
         if epoch % args.eval_per_epoch == 0:
-            batches = BatchGen(dev, batch_size=args.batch_size, evaluation=True, gpu=args.cuda)
+            batches = BatchGen(dev, batch_size=1, evaluation=True, gpu=args.cuda)
             predictions = []
             for batch in batches:
                 predictions.extend(model.predict(batch))
@@ -171,13 +171,13 @@ def main():
             log.warn("dev EM: {} F1: {}".format(em, f1))
         # save
         if not args.save_last_only or epoch == epoch_0 + args.epochs - 1:
-            model_file = os.path.join(model_dir, 'checkpoint_epoch_{}.pt'.format(epoch))
+            model_file = '{}.checkpoint.pt'.format(args.log_file)
             model.save(model_file, epoch)
             if f1 > best_val_score:
                 best_val_score = f1
                 copyfile(
                     model_file,
-                    os.path.join(model_dir, 'best_model.pt'))
+                    '{}.best.pt'.format(args.log_file))
                 log.info('[new best model saved.]')
 
 
