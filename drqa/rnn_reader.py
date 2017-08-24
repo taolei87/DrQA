@@ -10,12 +10,19 @@ from . import layers
 # Modification: add 'pos' and 'ner' features.
 # Origin: https://github.com/facebookresearch/ParlAI/tree/master/parlai/agents/drqa
 
+def normalize_emb_(data):
+    print (data.size(), data[:10].norm(2,1))
+    norms = data.norm(2,1) + 1e-8
+    if norms.dim() == 1:
+        norms = norms.unsqueeze(1)
+    data.div_(norms.expand_as(data))
+    print (data.size(), data[:10].norm(2,1))
 
 class RnnDocReader(nn.Module):
     """Network for the Document Reader module of DrQA."""
     RNN_TYPES = {'lstm': nn.LSTM, 'gru': nn.GRU, 'rnn': nn.RNN}
 
-    def __init__(self, opt, padding_idx=0, embedding=None):
+    def __init__(self, opt, padding_idx=0, embedding=None, normalize_emb=True):
         super(RnnDocReader, self).__init__()
         # Store config
         self.opt = opt
@@ -26,7 +33,9 @@ class RnnDocReader(nn.Module):
             self.embedding = nn.Embedding(embedding.size(0),
                                           embedding.size(1),
                                           padding_idx=padding_idx)
+            if normalize_emb: normalize_emb_(embedding)
             self.embedding.weight.data = embedding
+
             if opt['fix_embeddings']:
                 assert opt['tune_partial'] == 0
                 for p in self.embedding.parameters():
@@ -42,8 +51,10 @@ class RnnDocReader(nn.Module):
                                           padding_idx=padding_idx)
         if opt['pos']:
             self.pos_embedding = nn.Embedding(opt['pos_size'], opt['pos_dim'])
+            if normalize_emb: normalize_emb_(self.pos_embedding.weight.data)
         if opt['ner']:
             self.ner_embedding = nn.Embedding(opt['ner_size'], opt['ner_dim'])
+            if normalize_emb: normalize_emb_(self.ner_embedding.weight.data)
         # Projection for attention weighted question
         if opt['use_qemb']:
             self.qemb_match = layers.SeqAttnMatch(opt['embedding_dim'])
@@ -120,13 +131,6 @@ class RnnDocReader(nn.Module):
         x1_emb = self.embedding(x1)
         x2_emb = self.embedding(x2)
 
-        # Dropout on embeddings
-        if self.opt['dropout_emb'] > 0:
-            x1_emb = nn.functional.dropout(x1_emb, p=self.opt['dropout_emb'],
-                                           training=self.training)
-            x2_emb = nn.functional.dropout(x2_emb, p=self.opt['dropout_emb'],
-                                           training=self.training)
-
         drnn_input_list = [x1_emb, x1_f]
         # Add attention-weighted question representation
         if self.opt['use_qemb']:
@@ -139,6 +143,13 @@ class RnnDocReader(nn.Module):
             x1_ner_emb = self.ner_embedding(x1_ner)
             drnn_input_list.append(x1_ner_emb)
         drnn_input = torch.cat(drnn_input_list, 2)
+
+        if self.opt['dropout_emb'] > 0:
+            drnn_input = nn.functional.dropout(drnn_input, p=self.opt['dropout_emb'],
+                                               training=self.training)
+            x2_emb = nn.functional.dropout(x2_emb, p=self.opt['dropout_emb'],
+                                           training=self.training)
+
         # Encode document with RNN
         doc_hiddens = self.doc_rnn(drnn_input, x1_mask)
 

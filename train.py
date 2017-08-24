@@ -69,13 +69,13 @@ parser.add_argument('--pos', type=str2bool, nargs='?', const=True, default=True,
                     help='use pos tags as a feature.')
 parser.add_argument('--pos_size', type=int, default=56,
                     help='how many kinds of POS tags.')
-parser.add_argument('--pos_dim', type=int, default=12,
+parser.add_argument('--pos_dim', type=int, default=56,
                     help='the embedding dimension for POS tags.')
 parser.add_argument('--ner', type=str2bool, nargs='?', const=True, default=True,
                     help='use named entity tags as a feature.')
 parser.add_argument('--ner_size', type=int, default=19,
                     help='how many kinds of named entity tags.')
-parser.add_argument('--ner_dim', type=int, default=8,
+parser.add_argument('--ner_dim', type=int, default=19,
                     help='the embedding dimension for named entity tags.')
 parser.add_argument('--use_qemb', type=str2bool, nargs='?', const=True, default=True)
 parser.add_argument('--concat_rnn_layers', type=str2bool, nargs='?',
