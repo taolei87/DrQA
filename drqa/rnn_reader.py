@@ -67,6 +67,7 @@ class RnnDocReader(nn.Module):
             concat_layers=opt['concat_rnn_layers'],
             rnn_type=self.RNN_TYPES[opt['rnn_type']],
             padding=opt['rnn_padding'],
+            rnn_dropout_rate=opt['rnn_dropout_rate'],
         )
 
         # RNN question encoder
@@ -79,6 +80,7 @@ class RnnDocReader(nn.Module):
             concat_layers=opt['concat_rnn_layers'],
             rnn_type=self.RNN_TYPES[opt['rnn_type']],
             padding=opt['rnn_padding'],
+            rnn_dropout_rate=opt['rnn_dropout_rate'],
         )
 
         # Output sizes of rnn encoders

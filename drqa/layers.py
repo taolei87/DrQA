@@ -20,7 +20,7 @@ from . import cuda_functional3 as MF
 class StackedBRNN(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers,
                  dropout_rate=0, dropout_output=False, rnn_type=nn.LSTM,
-                 concat_layers=False, padding=False):
+                 concat_layers=False, padding=False, rnn_dropout_rate=0):
         super(StackedBRNN, self).__init__()
         self.padding = padding
         self.dropout_output = dropout_output
@@ -34,8 +34,8 @@ class StackedBRNN(nn.Module):
             #                          num_layers=1,
             #                          bidirectional=True))
             self.rnns.append(MF.FastKNNCell(input_size, hidden_size,
-                                      dropout=0,
-                                      rnn_dropout=0,
+                                      dropout=dropout_rate,
+                                      rnn_dropout=rnn_dropout_rate,
                                       use_tanh=1,
                                       bidirectional=True))
     def forward(self, x, x_mask):
@@ -56,16 +56,19 @@ class StackedBRNN(nn.Module):
         # Transpose batch and sequence dims
         x = x.transpose(0, 1)
 
+        if self.dropout_rate > 0:
+            x = F.dropout(x, p=self.dropout_rate, training=self.training)
+
         # Encode all layers
         outputs = [x]
         for i in range(self.num_layers):
             rnn_input = outputs[-1]
 
             # Apply dropout to hidden input
-            if self.dropout_rate > 0:
-                rnn_input = F.dropout(rnn_input,
-                                      p=self.dropout_rate,
-                                      training=self.training)
+#            if self.dropout_rate > 0:
+#                rnn_input = F.dropout(rnn_input,
+#                                      p=self.dropout_rate,
+#                                      training=self.training)
             # Forward
             rnn_output = self.rnns[i](rnn_input)[0]
             outputs.append(rnn_output)

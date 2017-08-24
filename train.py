@@ -82,6 +82,7 @@ parser.add_argument('--concat_rnn_layers', type=str2bool, nargs='?',
                     const=True, default=True)
 parser.add_argument('--dropout_emb', type=float, default=0.3)
 parser.add_argument('--dropout_rnn', type=float, default=0.3)
+parser.add_argument('--rnn_dropout_rate', type=float, default=0.0)
 parser.add_argument('--dropout_rnn_output', type=str2bool, nargs='?',
                     const=True, default=True)
 parser.add_argument('--max_len', type=int, default=15)
