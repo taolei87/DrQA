@@ -47,9 +47,9 @@ parser.add_argument('-rlr', '--reduce_lr', type=float, default=0.,
                     help='reduce initial (resumed) learning rate by this factor.')
 parser.add_argument('-op', '--optimizer', default='adamax',
                     help='supported optimizer: adamax, sgd')
-parser.add_argument('-gc', '--grad_clipping', type=float, default=10)
+parser.add_argument('-gc', '--grad_clipping', type=float, default=5)
 parser.add_argument('-wd', '--weight_decay', type=float, default=0)
-parser.add_argument('-lr', '--learning_rate', type=float, default=0.1,
+parser.add_argument('-lr', '--learning_rate', type=float, default=0.001,
                     help='only applied to SGD.')
 parser.add_argument('-mm', '--momentum', type=float, default=0,
                     help='only applied to SGD.')

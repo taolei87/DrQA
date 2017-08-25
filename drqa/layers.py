@@ -34,8 +34,8 @@ class StackedBRNN(nn.Module):
             #                          num_layers=1,
             #                          bidirectional=True))
             self.rnns.append(MF.FastKNNCell(input_size, hidden_size,
-                                      dropout=0,
-                                      rnn_dropout=dropout_rate,
+                                      dropout=dropout_rate,
+                                      rnn_dropout=rnn_dropout_rate,
                                       use_tanh=1,
                                       bidirectional=True))
     def forward(self, x, x_mask):
@@ -55,6 +55,9 @@ class StackedBRNN(nn.Module):
         """Faster encoding that ignores any padding."""
         # Transpose batch and sequence dims
         x = x.transpose(0, 1)
+	
+        if self.dropout_rate > 0:
+            x = F.dropout(x, p=self.dropout_rate, training=self.training)
 
         # Encode all layers
         outputs = [x]

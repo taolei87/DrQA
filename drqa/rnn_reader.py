@@ -22,7 +22,7 @@ class RnnDocReader(nn.Module):
     """Network for the Document Reader module of DrQA."""
     RNN_TYPES = {'lstm': nn.LSTM, 'gru': nn.GRU, 'rnn': nn.RNN}
 
-    def __init__(self, opt, padding_idx=0, embedding=None, normalize_emb=True):
+    def __init__(self, opt, padding_idx=0, embedding=None, normalize_emb=False):
         super(RnnDocReader, self).__init__()
         # Store config
         self.opt = opt
@@ -131,6 +131,12 @@ class RnnDocReader(nn.Module):
         x1_emb = self.embedding(x1)
         x2_emb = self.embedding(x2)
 
+        if self.opt['dropout_emb'] > 0:
+            x1_emb = nn.functional.dropout(x1_emb, p=self.opt['dropout_emb'],
+                                               training=self.training)
+            x2_emb = nn.functional.dropout(x2_emb, p=self.opt['dropout_emb'],
+                                           training=self.training)
+
         drnn_input_list = [x1_emb, x1_f]
         # Add attention-weighted question representation
         if self.opt['use_qemb']:
@@ -138,17 +144,17 @@ class RnnDocReader(nn.Module):
             drnn_input_list.append(x2_weighted_emb)
         if self.opt['pos']:
             x1_pos_emb = self.pos_embedding(x1_pos)
+            if self.opt['dropout_emb'] > 0:
+                x1_pos_emb = nn.functional.dropout(x1_pos_emb, p=self.opt['dropout_emb'],
+                                               training=self.training)
             drnn_input_list.append(x1_pos_emb)
         if self.opt['ner']:
             x1_ner_emb = self.ner_embedding(x1_ner)
+            if self.opt['dropout_emb'] > 0:
+                x1_ner_emb = nn.functional.dropout(x1_ner_emb, p=self.opt['dropout_emb'],
+                                               training=self.training)
             drnn_input_list.append(x1_ner_emb)
         drnn_input = torch.cat(drnn_input_list, 2)
-
-        if self.opt['dropout_emb'] > 0:
-            drnn_input = nn.functional.dropout(drnn_input, p=self.opt['dropout_emb'],
-                                               training=self.training)
-            x2_emb = nn.functional.dropout(x2_emb, p=self.opt['dropout_emb'],
-                                           training=self.training)
 
         # Encode document with RNN
         doc_hiddens = self.doc_rnn(drnn_input, x1_mask)
