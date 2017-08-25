@@ -55,6 +55,10 @@ class DocReaderModel(object):
             raise RuntimeError('Unsupported optimizer: %s' % opt['optimizer'])
         if state_dict:
             self.optimizer.load_state_dict(state_dict['optimizer'])
+	
+        num_params = sum(p.data.numel() for p in parameters
+            if p.data.data_ptr() != self.network.embedding.weight.data.data_ptr())
+        print ("{} parameters".format(num_params))
 
     def update(self, ex):
         # Train mode

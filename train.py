@@ -30,7 +30,7 @@ parser.add_argument('--save_last_only', action='store_true',
                     help='only save the final models.')
 parser.add_argument('--eval_per_epoch', type=int, default=1,
                     help='perform evaluation per x epochs.')
-parser.add_argument('--seed', type=int, default=411,
+parser.add_argument('--seed', type=int, default=-1,
                     help='random seed for data shuffling, dropout, etc.')
 parser.add_argument("--cuda", type=str2bool, nargs='?',
                     const=True, default=torch.cuda.is_available(),
@@ -97,10 +97,11 @@ os.makedirs(model_dir, exist_ok=True)
 model_dir = os.path.abspath(model_dir)
 
 # set random seed
-random.seed(args.seed)
-torch.manual_seed(args.seed)
-if args.cuda:
-    torch.cuda.manual_seed(args.seed)
+if args.seed >= 0:
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if args.cuda:
+        torch.cuda.manual_seed(args.seed)
 
 # setup logger
 log = logging.getLogger(__name__)
