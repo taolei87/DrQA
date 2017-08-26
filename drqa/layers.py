@@ -55,9 +55,12 @@ class StackedBRNN(nn.Module):
         """Faster encoding that ignores any padding."""
         # Transpose batch and sequence dims
         x = x.transpose(0, 1)
-	
-        if self.dropout_rate > 0:
-            x = F.dropout(x, p=self.dropout_rate, training=self.training)
+
+        if self.dropout_rate > 0 and self.training:
+            mask = Variable(x.data.new(1, x.size(1), x.size(2)).bernoulli_(
+                1-self.dropout_rate).div_(1-self.dropout_rate)
+            )
+            x = x * mask.expand_as(x)
 
         # Encode all layers
         outputs = [x]
