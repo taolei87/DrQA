@@ -445,6 +445,13 @@ class FastKNNCell(nn.Module):
         self.weight.data.uniform_(-val_range, val_range)
         self.bias.data.zero_()
 
+    def add_bias(self, bias_val=0):
+        n_out = self.n_out
+        if self.bidirectional:
+            self.bias.data[n_out*2:].add_(bias_val)
+        else:
+            sefl.bias.data[n_out:].add_(bias_val)
+
     def forward(self, input, c0=None):
         assert input.dim() == 2 or input.dim() == 3
         n_in, n_out = self.n_in, self.n_out

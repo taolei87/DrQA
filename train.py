@@ -47,7 +47,7 @@ parser.add_argument('-rlr', '--reduce_lr', type=float, default=0.,
                     help='reduce initial (resumed) learning rate by this factor.')
 parser.add_argument('-op', '--optimizer', default='adamax',
                     help='supported optimizer: adamax, sgd')
-parser.add_argument('-gc', '--grad_clipping', type=float, default=5)
+parser.add_argument('-gc', '--grad_clipping', type=float, default=20)
 parser.add_argument('-wd', '--weight_decay', type=float, default=0)
 parser.add_argument('-lr', '--learning_rate', type=float, default=0.001,
                     help='only applied to SGD.')
@@ -83,6 +83,7 @@ parser.add_argument('--concat_rnn_layers', type=str2bool, nargs='?',
 parser.add_argument('--dropout_emb', type=float, default=0.3)
 parser.add_argument('--dropout_rnn', type=float, default=0.3)
 parser.add_argument('--rnn_dropout_rate', type=float, default=0.0)
+parser.add_argument('--bias', type=float, default=0.0)
 parser.add_argument('--dropout_rnn_output', type=str2bool, nargs='?',
                     const=True, default=True)
 parser.add_argument('--max_len', type=int, default=15)
@@ -97,11 +98,12 @@ os.makedirs(model_dir, exist_ok=True)
 model_dir = os.path.abspath(model_dir)
 
 # set random seed
-if args.seed >= 0:
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if args.cuda:
-        torch.cuda.manual_seed(args.seed)
+seed = args.seed if args.seed >= 0 else int(random.random()*1000)
+print ('seed:', seed)
+random.seed(seed)
+torch.manual_seed(seed)
+if args.cuda:
+    torch.cuda.manual_seed(seed)
 
 # setup logger
 log = logging.getLogger(__name__)

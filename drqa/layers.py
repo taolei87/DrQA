@@ -20,7 +20,7 @@ from . import cuda_functional3 as MF
 class StackedBRNN(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers,
                  dropout_rate=0, dropout_output=False, rnn_type=nn.LSTM,
-                 concat_layers=False, padding=False, rnn_dropout_rate=0):
+                 concat_layers=False, padding=False, rnn_dropout_rate=0, bias=0):
         super(StackedBRNN, self).__init__()
         self.padding = padding
         self.dropout_output = dropout_output
@@ -38,6 +38,8 @@ class StackedBRNN(nn.Module):
                                       rnn_dropout=rnn_dropout_rate,
                                       use_tanh=1,
                                       bidirectional=True))
+            self.rnns[-1].add_bias(bias)
+
     def forward(self, x, x_mask):
         """Can choose to either handle or ignore variable length sequences.
         Always handle padding in eval.
