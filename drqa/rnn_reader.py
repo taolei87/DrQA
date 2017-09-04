@@ -79,7 +79,6 @@ class RnnDocReader(nn.Module):
             rnn_type=self.RNN_TYPES[opt['rnn_type']],
             padding=opt['rnn_padding'],
             rnn_dropout_rate=opt['rnn_dropout_rate'],
-            bias = opt['bias'],
         )
 
         # RNN question encoder
@@ -93,7 +92,6 @@ class RnnDocReader(nn.Module):
             rnn_type=self.RNN_TYPES[opt['rnn_type']],
             padding=opt['rnn_padding'],
             rnn_dropout_rate=opt['rnn_dropout_rate'],
-            bias = opt['bias'],
         )
 
         # Output sizes of rnn encoders
