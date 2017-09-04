@@ -20,7 +20,7 @@ from . import cuda_functional3 as MF
 class StackedBRNN(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers,
                  dropout_rate=0, dropout_output=False, rnn_type=nn.LSTM,
-                 concat_layers=False, padding=False, rnn_dropout_rate=0, bias=0):
+                 concat_layers=False, padding=False, rnn_dropout_rate=0):
         super(StackedBRNN, self).__init__()
         self.padding = padding
         self.dropout_output = dropout_output
@@ -38,7 +38,6 @@ class StackedBRNN(nn.Module):
                                       rnn_dropout=rnn_dropout_rate,
                                       use_tanh=1,
                                       bidirectional=True))
-            self.rnns[-1].add_bias(bias)
 
     def forward(self, x, x_mask):
         """Can choose to either handle or ignore variable length sequences.
@@ -58,11 +57,11 @@ class StackedBRNN(nn.Module):
         # Transpose batch and sequence dims
         x = x.transpose(0, 1)
 
-        if self.dropout_rate > 0 and self.training:
-            mask = Variable(x.data.new(1, x.size(1), x.size(2)).bernoulli_(
-                1-self.dropout_rate).div_(1-self.dropout_rate)
-            )
-            x = x * mask.expand_as(x)
+#        if self.dropout_rate > 0 and self.training:
+#            mask = Variable(x.data.new(1, x.size(1), x.size(2)).bernoulli_(
+#                1-self.dropout_rate).div_(1-self.dropout_rate)
+#            )
+#            x = x * mask.expand_as(x)
 
         # Encode all layers
         outputs = [x]
